@@ -1,0 +1,8 @@
+[package]
+name = "jsonrpc2"
+version = "0.1.0"
+authors = ["Sam Crow <samcrow@uw.edu>"]
+
+[dependencies]
+serde_json = "^0.6"
+chrono = "^0.2"
