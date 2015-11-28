@@ -17,7 +17,7 @@ pub struct ServerEndpoint<T> where T: ServerTransport {
     /// The transport layer
     /// Although this field is never accessed, it must be here so that it will be dropped
     /// when the endpoint is dropped.
-    _transport: T,
+    transport: T,
 }
 
 impl<T> ServerEndpoint<T> where T: ServerTransport {
@@ -26,8 +26,13 @@ impl<T> ServerEndpoint<T> where T: ServerTransport {
         let mut transport = transport;
         transport.set_callback(responder);
         ServerEndpoint {
-            _transport: transport,
+            transport: transport,
         }
+    }
+
+    /// Runs the endpoint until a transport end-of-file condition occurs
+    pub fn run(self) {
+        self.transport.run()
     }
 }
 

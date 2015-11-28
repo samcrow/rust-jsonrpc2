@@ -117,4 +117,8 @@ pub trait ServerTransport : 'static + Send {
     /// Sets the callback that this transport layer will use to respond to requests
     ///
     fn set_callback<C>(&mut self, callback: C) where C: ServerCallback;
+    ///
+    /// Runs the transport mechanism and returns when an end of file is reached
+    ///
+    fn run(self);
 }

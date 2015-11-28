@@ -7,7 +7,7 @@ use std::io::{Read, Write, Lines, BufWriter, BufRead, BufReader};
 use transport::{ServerTransport, ServerCallback, TransportError};
 use std::sync::mpsc::{channel, Sender, Receiver, TryRecvError};
 use std::boxed::Box;
-use std::thread::Builder;
+use std::thread::{Builder, JoinHandle};
 
     /// The character that separates payloads in a stream
     const SEPARATOR: u8 = '\n' as u8;
@@ -20,6 +20,8 @@ pub struct ServerStreamTransport {
     /// A callback can be sent to set the callback to use.
     /// When the channel is closed, the reader thread may terminate.
     channel: Sender<Box<ServerCallback>>,
+    /// The handle used to wait for the reader thread to terminate
+    handle: JoinHandle<()>,
 }
 
 impl ServerStreamTransport {
@@ -27,12 +29,13 @@ impl ServerStreamTransport {
         let (tx, rx) = channel();
 
         let mut reader = Reader::new(input, output, rx);
-        try!(Builder::new().name("ServerStreamTransport reader".to_string()).spawn(move || {
+        let handle = try!(Builder::new().name("ServerStreamTransport reader".to_string()).spawn(move || {
             reader.run();
         }));
 
         Ok(ServerStreamTransport {
-            channel: tx
+            channel: tx,
+            handle: handle,
         })
     }
 }
@@ -44,6 +47,9 @@ impl ServerTransport for ServerStreamTransport {
             Err(_) => println!("ServerStreamTransport: Reader thread has terminated"),
             Ok(()) => {},
         }
+    }
+    fn run(self) {
+        let _ = self.handle.join();
     }
 }
 
