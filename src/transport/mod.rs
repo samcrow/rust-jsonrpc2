@@ -22,8 +22,14 @@ pub enum TransportError {
     ParseError,
     /// Data to be sent could not be encoded
     EncodeError,
+    /// Something could not be found
+    NotFound,
+    /// The transport layer does not have a required callback set
+    MissingCallback,
     /// A different error
     IOError(io::Error),
+    /// A different error that is not an io::Error,
+    Other,
 }
 
 /// Creates a TransportError from a corresponding io::Error
@@ -54,14 +60,14 @@ impl From<io::Error> for TransportError {
 ///
 /// Trait for something to be notified when a payload from the server is received
 ///
-pub trait PayloadHandler: 'static + Send {
+pub trait PayloadHandler: 'static + Send + Sync {
     ///
     /// Called when a response from the server is received
     ///
     fn payload_received(&mut self, result: Result<String, TransportError>);
 }
 /// PayloadHandler implementation for closures
-impl<F> PayloadHandler for F where F: Fn(Result<String, TransportError>), F: 'static + Send {
+impl<F> PayloadHandler for F where F: Fn(Result<String, TransportError>), F: 'static + Send + Sync {
     fn payload_received(&mut self, result: Result<String, TransportError>) {
         self(result)
     }

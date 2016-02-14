@@ -6,6 +6,14 @@ pub mod client;
 pub mod server;
 pub mod transport;
 pub mod message;
+
+#[cfg(feature = "http")]
+extern crate hyper;
+#[cfg(feature = "http")]
+extern crate url;
+#[cfg(feature = "http")]
+pub mod http;
+
 use message::*;
 
 extern crate serde_json;
